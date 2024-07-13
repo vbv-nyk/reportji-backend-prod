@@ -30,7 +30,7 @@ const privateKey = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/pri
 const certificate = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/cert.pem", 'utf8')
 const ca = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/chain.pem", 'utf8')
 
-const credentials = { key: privateKey, certificate: certificate};
+const credentials = { key: privateKey, cert: certificate, ca: ca};
 
 // Required logic for integrating with Express
 const app = express();
