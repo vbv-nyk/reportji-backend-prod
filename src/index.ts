@@ -14,18 +14,9 @@ import { resolvers } from "./graphql/resolver.js";
 import { initializePassport, isAuthenticated } from "./auth/passport.js";
 import { pool } from "./database/postgres-config.js";
 import { config } from 'dotenv';
+import https from "https";
+import fs from 'fs';
 config({ path: `.env.${process.env.CURRENT_MODE}` });
-/* const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
-const multer = require('multer');
-
-// Set up AWS credentials
-const s3Client = new S3Client({
-  region: 'YOUR_AWS_REGION',
-  credentials: {
-    accessKeyId: 'YOUR_ACCESS_KEY',
-    secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
-  },
-} ); */
 
 import connectPgSimple from "connect-pg-simple";
 
@@ -35,19 +26,24 @@ interface MyContext {
   token?: string;
 }
 
+const certificate = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/fullchain.pem")
+const privateKey = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/privkey.pem")
+
+const credentials = { key: privateKey, certificate: certificate};
+
 // Required logic for integrating with Express
 const app = express();
 // Our httpServer handles incoming requests to our Express app.
 // Below, we tell Apollo Server to "drain" this httpServer,
 // enabling our servers to shut down gracefully.
-const httpServer = http.createServer(app);
+const httpsServer = https.createServer(credentials, app);
 
 // Same ApolloServer initialization as before, plus the drain plugin
 // for our httpServer.
 const server = new ApolloServer<MyContext>({
   typeDefs,
   resolvers,
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer: httpsServer })],
 });
 // Ensure we wait for our server to start
 await server.start();
@@ -93,6 +89,6 @@ app.use(
 
 // Modified server startup
 await new Promise<void>((resolve) =>
-  httpServer.listen({ port: process.env.PORT }, resolve)
+  httpsServer.listen({ port: process.env.PORT }, resolve)
 );
 console.log(`Serving host ${process.env.CLIENT_URL}`);
