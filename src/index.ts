@@ -58,7 +58,7 @@ app.use(
   session({
     cookie: {
       secure: true,
-      sameSize: 'Lax',
+      sameSite: 'Lax',
       maxAge: 1000 * 60 * 60 * 24 * 30 // Cookie expiry time in milliseconds
     },
     store: new pgSession({
@@ -78,6 +78,7 @@ app.use(
     credentials: true,
   })
 );
+
 app.use("/auth", login);
 
 // All protected routes start from here
