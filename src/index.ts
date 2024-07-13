@@ -26,8 +26,9 @@ interface MyContext {
   token?: string;
 }
 
-const certificate = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/fullchain.pem", 'utf8')
 const privateKey = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/privkey.pem", 'utf8')
+const certificate = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/cert.pem", 'utf8')
+const ca = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/chain.pem", 'utf8')
 
 const credentials = { key: privateKey, certificate: certificate};
 
