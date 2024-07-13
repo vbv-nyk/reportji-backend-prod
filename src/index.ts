@@ -56,13 +56,17 @@ initializePassport();
 app.use(express.json());
 app.use(
   session({
+    cookie: {
+      secure: true,
+      sameSize: 'None',
+      maxAge: 1000 * 60 * 60 * 24 * 30 // Cookie expiry time in milliseconds
+    },
     store: new pgSession({
       pool: pool,
     }),
     secret: process.env.EXPRESS_SESSION_PASSWORD,
     resave: false,
     saveUninitialized: true,
-    maxAge: 1000 * 60 * 60 * 24 * 30,
   })
 );
 app.use(passport.initialize());
