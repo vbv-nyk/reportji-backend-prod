@@ -58,7 +58,7 @@ app.use(
   session({
     cookie: {
       secure: true,
-      sameSize: 'None',
+      sameSize: 'Lax',
       maxAge: 1000 * 60 * 60 * 24 * 30 // Cookie expiry time in milliseconds
     },
     store: new pgSession({
