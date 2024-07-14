@@ -74,10 +74,10 @@ export const resolvers = {
           await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
         }
         execSync(
-          `pdflatex -interaction=nonstopmode -output-directory=outputs/${id} output.tex `
+          `pdflatex -interaction=nonstopmode -output-directory=outputs/${id} output.tex || true`
         );
         execSync(
-          `pdflatex -interaction=nonstopmode -output-directory=outputs/${id} output.tex `
+          `pdflatex -interaction=nonstopmode -output-directory=outputs/${id} output.tex || true`
         );
         // execSync(
           // `rm outputs/${id}/output.aux outputs/${id}/output.lof outputs/${id}/output.log outputs/${id}/output.toc outputs/${id}/output.out`
