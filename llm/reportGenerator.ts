@@ -6,6 +6,7 @@ import express, { Request, Response } from "express"
 import { reportGeneratorPrompt } from "./reportGeneratorPrompt";
 
 
+
 // Ensure your API key is correctly set here
 const genAI = new GoogleGenerativeAI("");
 
@@ -15,7 +16,7 @@ function initializeModel() {
         type: SchemaType.STRING,
         enum: ["0", "1", "2", "3", "4", "5", "6"],
         description: `
-            The following are the different types of inputs present in the frontend.
+            The following are the different tags present in our language.
             case 0:
               return title
             case 1:
@@ -42,11 +43,19 @@ function initializeModel() {
               return ;
         `
     }
+    const elementDefinitionSchema = {
+        type: SchemaType.OBJECT,
+        properties: {
+            type: elementEnumTypeSchema,
+            content: { type: SchemaType.STRING, description: "The actual content of the section."}
+        }
+    }
 
     const elementType = {
         type: SchemaType.OBJECT,
         properties: {
-            type: elementEnumTypeSchema
+            type: elementEnumTypeSchema,
+            element: elementDefinitionSchema,
         }
     }
     const contentSchema = {
