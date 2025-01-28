@@ -39,7 +39,7 @@ export const initializePassport = () => {
 
 
 export const isAuthenticated = (req,res,next) => {
-  if(req.isAuthenticated()) {
+  if(req.isAuthenticated() || process.env.CURRENT_MODE == "selfhost") {
     console.log("User is authenticated");
     console.log(req.user);
     next();

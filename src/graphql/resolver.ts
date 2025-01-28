@@ -4,6 +4,7 @@ import { pool } from "../database/postgres-config.js";
 import { QueryResult } from "pg";
 import { create } from "domain";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import generateReportWithLLM from "../llm/reportGenerator.js";
 
 type Document = {
   name: string;
@@ -29,7 +30,7 @@ export const resolvers = {
               set pages = $1, name = $2
               where user_id = $3 and document_id = $4
               returning document_id
-            `, [pagesData, name ,id, docID]
+            `, [pagesData, name, id, docID]
           )
           console.log(update_pdf);
           return {
@@ -63,12 +64,26 @@ export const resolvers = {
         };
       }
     },
+    CreateReportWithLLM: async (parent, args, context, info) => {
+      try {
+        const { prompt } = args;
+        const report = JSON.stringify(await generateReportWithLLM({ userPrompt: prompt }));
+        return report
+      } catch (err) {
+        console.log(err);
+        return {
+          err: true,
+          errMessage: err,
+          tex: `Error ${err}`,
+        };
+      }
+    },
     CreatePDF: async (parent, args, context, info) => {
-        const { id } = context.user;
-        const {
-          texFile,
-          docID
-        }: { texFile: string, docID: number } = args;
+      const { id } = context.user;
+      const {
+        texFile,
+        docID
+      }: { texFile: string, docID: number } = args;
       try {
         if (texFile.length != 0) {
           await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
@@ -80,7 +95,7 @@ export const resolvers = {
           `pdflatex -interaction=nonstopmode -output-directory=outputs/${id} output.tex || true`
         );
         // execSync(
-          // `rm outputs/${id}/output.aux outputs/${id}/output.lof outputs/${id}/output.log outputs/${id}/output.toc outputs/${id}/output.out`
+        // `rm outputs/${id}/output.aux outputs/${id}/output.lof outputs/${id}/output.log outputs/${id}/output.toc outputs/${id}/output.out`
         // );
 
         let pdf = await fs.readFile(`outputs/${id}/output.pdf`);
@@ -100,11 +115,11 @@ export const resolvers = {
         };
       } catch (err) {
         const url = `https://reportji.s3.ap-south-1.amazonaws.com/${id}/${docID}`;
-          console.error(err);
+        console.error(err);
         return {
           err: true,
           errMessage: err,
-          pdf:url ,
+          pdf: url,
         };
       }
     },

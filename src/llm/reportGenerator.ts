@@ -108,13 +108,7 @@ function initializeModel() {
     ],
     generationConfig: {
       responseMimeType: "application/json",
-      responseSchema: {
-        type: SchemaType.OBJECT,
-        properties: {
-          response: reportSchema,
-        },
-        required: ["response"],
-      },
+      responseSchema: reportSchema,
     },
   });
 
@@ -123,18 +117,18 @@ function initializeModel() {
 
 const model = initializeModel();
 
-const generateReportWithLLM = async (req, res) => {
-  const { userPrompt } = req.body;
+const generateReportWithLLM = async (props: { userPrompt: string }) => {
+  const { userPrompt } = props;
   const chat = model.startChat();
   try {
     console.log("Receieved request", userPrompt);
     let result = await chat.sendMessage(userPrompt);
     console.log("Generated the report");
     const response = result.response;
-    return res.send(response.text());
+    return response.text()
   } catch (e) {
     console.log(e)
-    return res.send({ error: "There was an error generating the report" + e });
+    return "Error generating report";
   }
 };
 
