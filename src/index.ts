@@ -47,7 +47,6 @@ if (process.env.CURRENT_MODE != "selfhost") {
   if (process.env.CURRENT_MODE != "selfhost") {
     apolloPlugins.push(ApolloServerPluginDrainHttpServer({ httpServer: httpsServer }))
   }
-
   // Modified server startup
   await new Promise<void>((resolve) =>
     httpsServer.listen({ port: process.env.PORT }, resolve)
@@ -73,7 +72,7 @@ app.use(
   session({
     cookie: {
       secure: true,
-      sameSite: 'None',
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24 * 30 // Cookie expiry time in milliseconds
     },
     store: new pgSession({
@@ -88,10 +87,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(
-  cors<cors.CorsRequest>({
-    origin: [process.env.CLIENT_URL, "http://localhost:3000"],
-    credentials: true,
-  })
+  cors<cors.CorsRequest>()
 );
 
 app.use("/auth", login);
@@ -109,3 +105,6 @@ app.use(
 );
 
 console.log(`Serving host ${process.env.CLIENT_URL}`);
+await new Promise<void>((resolve) =>
+  app.listen(process.env.PORT, () => { console.log("Listening http on port 4000") })
+);
