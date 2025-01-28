@@ -26,28 +26,43 @@ interface MyContext {
   token?: string;
 }
 
-const privateKey = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/privkey.pem", 'utf8')
-const certificate = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/cert.pem", 'utf8')
-const ca = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/chain.pem", 'utf8')
 
-const credentials = { key: privateKey, cert: certificate, ca: ca};
-
+const apolloPlugins = []
 // Required logic for integrating with Express
 const app = express();
-// Our httpServer handles incoming requests to our Express app.
-// Below, we tell Apollo Server to "drain" this httpServer,
-// enabling our servers to shut down gracefully.
-const httpsServer = https.createServer(credentials, app);
 
-// Same ApolloServer initialization as before, plus the drain plugin
-// for our httpServer.
+if (process.env.CURRENT_MODE != "selfhost") {
+  const privateKey = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/privkey.pem", 'utf8')
+  const certificate = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/cert.pem", 'utf8')
+  const ca = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/chain.pem", 'utf8')
+  const credentials = { key: privateKey, cert: certificate, ca: ca };
+
+  // Our httpServer handles incoming requests to our Express app.
+  // Below, we tell Apollo Server to "drain" this httpServer,
+  // enabling our servers to shut down gracefully.
+  const httpsServer = https.createServer(credentials, app);
+
+  // Same ApolloServer initialization as before, plus the drain plugin
+  // for our httpServer.
+  if (process.env.CURRENT_MODE != "selfhost") {
+    apolloPlugins.push(ApolloServerPluginDrainHttpServer({ httpServer: httpsServer }))
+  }
+
+  // Modified server startup
+  await new Promise<void>((resolve) =>
+    httpsServer.listen({ port: process.env.PORT }, resolve)
+  );
+}
+
 const server = new ApolloServer<MyContext>({
   typeDefs,
   resolvers,
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer: httpsServer })],
+  plugins: apolloPlugins,
 });
+
 // Ensure we wait for our server to start
 await server.start();
+
 
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
@@ -87,14 +102,10 @@ app.use("/auth", login);
 
 app.use(
   "/graphql",
-    isAuthenticated,
+  isAuthenticated,
   expressMiddleware(server, {
     context: async ({ req }) => ({ user: req.user }),
   })
 );
 
-// Modified server startup
-await new Promise<void>((resolve) =>
-  httpsServer.listen({ port: process.env.PORT }, resolve)
-);
 console.log(`Serving host ${process.env.CLIENT_URL}`);
