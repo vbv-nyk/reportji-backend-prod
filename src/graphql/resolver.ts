@@ -87,6 +87,7 @@ export const resolvers = {
         docID
       }: { texFile: string, docID: number } = args;
       const newDocID = uuidv4()
+      console.log(`PDF Generation: user ${id}, document ${docID}`)
       try {
         if (texFile.length != 0) {
           await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
