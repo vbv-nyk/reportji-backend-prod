@@ -50,8 +50,8 @@ app.use(express.json());
 app.use(
   session({
     cookie: {
-      secure: true,
-      sameSite: 'none',
+      // secure: true,
+      // sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24 * 30 // Cookie expiry time in milliseconds
     },
     store: new pgSession({

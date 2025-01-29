@@ -5,6 +5,7 @@ import { QueryResult } from "pg";
 import { create } from "domain";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import generateReportWithLLM from "../llm/reportGenerator.js";
+import { text } from "stream/consumers";
 
 type Document = {
   name: string;
@@ -99,15 +100,16 @@ export const resolvers = {
         // );
 
         let pdf = await fs.readFile(`outputs/${id}/output.pdf`);
-        const client = new S3Client({ region: "ap-south-1", credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
-        const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${docID}`, Bucket: "reportji", ContentType: "application/pdf" });
+        const client = new S3Client({ region: "eu-north-1", credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
+        const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${docID}`, Bucket: "reportease", ContentType: "application/pdf" });
         const response = await client.send(command);
-        const url = `https://reportji.s3.ap-south-1.amazonaws.com/${id}/${docID}`;
-        const new_url = await pool.query(`
-          update documents
-          set url = $1 
-          where user_id = $2 and document_id = $3
-          `, [url, id, docID]);
+        // console.log(response);
+        const url = `https://reportease.s3.eu-north-1.amazonaws.com/${id}/${docID}`;
+        // const new_url = await pool.query(`
+        //   update documents
+        //   set url = $1 
+        //   where user_id = $2 and document_id = $3
+        //   `, [url, id, docID]);
         return {
           err: false,
           errMsg: "None",
