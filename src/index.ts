@@ -49,7 +49,7 @@ if (process.env.CURRENT_MODE != "selfhost") {
   }
   // Modified server startup
   await new Promise<void>((resolve) =>
-    httpsServer.listen({ port: process.env.PORT }, resolve)
+    httpsServer.listen({ port: process.env.HTTPS_PORT }, resolve)
   );
 }
 
