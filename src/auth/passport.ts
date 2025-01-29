@@ -39,6 +39,10 @@ export const initializePassport = () => {
 
 
 export const isAuthenticated = (req,res,next) => {
+  console.log("Session ID:", req.sessionID);
+  console.log("Session:", req.session);
+  console.log("Is Authenticated:", req.isAuthenticated());
+  console.log("User:", req.user);
   if(req.isAuthenticated() || process.env.CURRENT_MODE == "selfhost") {
     console.log("User is authenticated");
     console.log(req.user);
