@@ -89,8 +89,10 @@ export const resolvers = {
       const newDocID = uuidv4()
       console.log(`PDF Generation: user ${id}, document ${docID}`)
       try {
+        console.log("Creating a directory for the user");
         await fs.mkdir(`outputs/${id}`, { recursive: true });
         await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
+        console.log("Running pdflatex");
         execSync(
           `pdflatex -interaction=nonstopmode -output-directory=outputs/${id} output.tex || true`
         );
@@ -101,6 +103,7 @@ export const resolvers = {
         // `rm outputs/${id}/output.aux outputs/${id}/output.lof outputs/${id}/output.log outputs/${id}/output.toc outputs/${id}/output.out`
         // );
 
+        console.log("Compiled, now reading the file");
         let pdf = await fs.readFile(`outputs/${id}/output.pdf`);
         const client = new S3Client({ region: "eu-north-1", credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
         const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${newDocID}`, Bucket: "reportease", ContentType: "application/pdf" });
