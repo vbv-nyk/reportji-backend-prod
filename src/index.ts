@@ -47,21 +47,42 @@ await server.start();
 initializePassport();
 
 app.use(express.json());
-app.use(
-  session({
-    cookie: {
-      // secure: true,
-      // sameSite: 'none',
-      maxAge: 1000 * 60 * 60 * 24 * 30 // Cookie expiry time in milliseconds
-    },
-    store: new pgSession({
-      pool: pool,
-    }),
-    secret: process.env.EXPRESS_SESSION_PASSWORD,
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+
+if (process.env.CURRENT_MODE != "selfhost") {
+  app.use(
+    session({
+      cookie: {
+        secure: true,
+        sameSite: 'none',
+        maxAge: 1000 * 60 * 60 * 24 * 30 // Cookie expiry time in milliseconds
+      },
+      store: new pgSession({
+        pool: pool,
+      }),
+      secret: process.env.EXPRESS_SESSION_PASSWORD,
+      resave: false,
+      saveUninitialized: true,
+    })
+  );
+} else {
+
+  app.use(
+    session({
+      cookie: {
+        // secure: true,
+        // sameSite: 'none',
+        maxAge: 1000 * 60 * 60 * 24 * 30 // Cookie expiry time in milliseconds
+      },
+      store: new pgSession({
+        pool: pool,
+      }),
+      secret: process.env.EXPRESS_SESSION_PASSWORD,
+      resave: false,
+      saveUninitialized: true,
+    })
+  );
+}
+
 app.use(passport.initialize());
 app.use(passport.session());
 
