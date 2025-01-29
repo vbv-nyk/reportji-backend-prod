@@ -31,27 +31,6 @@ const apolloPlugins = []
 // Required logic for integrating with Express
 const app = express();
 
-if (process.env.CURRENT_MODE != "selfhost") {
-  const privateKey = fs.readFileSync("./privkey1.pem", 'utf8')
-  const certificate = fs.readFileSync("./cert1.pem", 'utf8')
-  const ca = fs.readFileSync("./chain1.pem", 'utf8')
-  const credentials = { key: privateKey, cert: certificate, ca: ca };
-
-  // Our httpServer handles incoming requests to our Express app.
-  // Below, we tell Apollo Server to "drain" this httpServer,
-  // enabling our servers to shut down gracefully.
-  const httpsServer = https.createServer(credentials, app);
-
-  // Same ApolloServer initialization as before, plus the drain plugin
-  // for our httpServer.
-  if (process.env.CURRENT_MODE != "selfhost") {
-    apolloPlugins.push(ApolloServerPluginDrainHttpServer({ httpServer: httpsServer }))
-  }
-  // Modified server startup
-  await new Promise<void>((resolve) =>
-    httpsServer.listen({ port: process.env.HTTPS_PORT }, resolve)
-  );
-}
 
 const server = new ApolloServer<MyContext>({
   typeDefs,
@@ -72,7 +51,7 @@ app.use(
   session({
     cookie: {
       secure: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24 * 30 // Cookie expiry time in milliseconds
     },
     store: new pgSession({
@@ -108,6 +87,28 @@ app.use(
 );
 
 console.log(`Serving host ${process.env.CLIENT_URL}`);
+
+if (process.env.CURRENT_MODE != "selfhost") {
+  const privateKey = fs.readFileSync("./privkey1.pem", 'utf8')
+  const certificate = fs.readFileSync("./cert1.pem", 'utf8')
+  const ca = fs.readFileSync("./chain1.pem", 'utf8')
+  const credentials = { key: privateKey, cert: certificate, ca: ca };
+
+  // Our httpServer handles incoming requests to our Express app.
+  // Below, we tell Apollo Server to "drain" this httpServer,
+  // enabling our servers to shut down gracefully.
+  const httpsServer = https.createServer(credentials, app);
+
+  // Same ApolloServer initialization as before, plus the drain plugin
+  // for our httpServer.
+  if (process.env.CURRENT_MODE != "selfhost") {
+    apolloPlugins.push(ApolloServerPluginDrainHttpServer({ httpServer: httpsServer }))
+  }
+  // Modified server startup
+  await new Promise<void>((resolve) =>
+    httpsServer.listen({ port: process.env.HTTPS_PORT }, resolve)
+  );
+}
 await new Promise<void>((resolve) =>
   app.listen(process.env.PORT, () => { console.log("Listening http on port 4000") })
 );
