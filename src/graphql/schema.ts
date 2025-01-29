@@ -31,8 +31,6 @@ export const typeDefs =  gql`
 
   type Query {
     UserDetails: User,
-    RetrieveDocuments: [Document],
-    DocumentByID(document_id: Int!): Document,
   } 
   
   type Mutation {

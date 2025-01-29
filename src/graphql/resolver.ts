@@ -134,52 +134,5 @@ export const resolvers = {
         displayName,
       };
     },
-    RetrieveDocuments: async (parents, args, context, info) => {
-      const { id } = context.user;
-      try {
-        const data: QueryResult<Document> = await pool.query(
-          `select * from documents 
-          where user_id = $1;
-        `,
-          [id]
-        );
-        const documents: Document[] = data.rows.map((document): Document => {
-          const { name, pages, url, document_id } = document;
-          return {
-            name,
-            pages,
-            url,
-            document_id,
-          };
-        });
-        return documents;
-      } catch (e) {
-        return {
-          name: '',
-          pages: '',
-          url: ''
-        }
-      }
-    },
-    DocumentByID: async (parent, args, context, info) => {
-      const { id } = context.user;
-      const { document_id } = args;
-      try {
-        const data: QueryResult<Document> = await pool.query(
-          `select * from documents 
-          where user_id = $1 and document_id = $2;
-        `,
-          [id, document_id]
-        );
-        const document: Document = data.rows[0];
-        return document;
-      } catch (e) {
-        return {
-          name: '',
-          pages: '',
-          url: ''
-        }
-      }
-    },
   },
 };
