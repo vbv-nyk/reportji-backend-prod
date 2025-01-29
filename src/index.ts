@@ -32,9 +32,9 @@ const apolloPlugins = []
 const app = express();
 
 if (process.env.CURRENT_MODE != "selfhost") {
-  const privateKey = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/privkey.pem", 'utf8')
-  const certificate = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/cert.pem", 'utf8')
-  const ca = fs.readFileSync("/etc/letsencrypt/live/reportji.zapto.org/chain.pem", 'utf8')
+  const privateKey = fs.readFileSync("privkey.pem", 'utf8')
+  const certificate = fs.readFileSync("cert.pem", 'utf8')
+  const ca = fs.readFileSync("chain.pem", 'utf8')
   const credentials = { key: privateKey, cert: certificate, ca: ca };
 
   // Our httpServer handles incoming requests to our Express app.
