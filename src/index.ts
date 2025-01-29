@@ -87,7 +87,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(
-  cors<cors.CorsRequest>()
+  cors<cors.CorsRequest>({
+    origin: [process.env.CLIENT_URL, "http://localhost:3000"],
+    credentials: true,
+  })
 );
 
 app.use("/auth", login);

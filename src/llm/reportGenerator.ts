@@ -66,19 +66,19 @@ function initializeModel() {
     },
     required: ["type", "element"],
   };
-  const contentSchema = {
-    name: {
-      type: SchemaType.STRING,
-      description: "The name of the chapter.",
-    },
-    elements: {
-      type: SchemaType.ARRAY,
-      items: elementType,
-    },
-  };
   const chapterSchema = {
     type: SchemaType.OBJECT,
-    properties: contentSchema,
+    properties: {
+      name: {
+        type: SchemaType.STRING,
+        description: "The name of the chapter.",
+      },
+      elements: {
+        type: SchemaType.ARRAY,
+        items: elementType,
+      },
+    },
+    required: ["name", "elements"]
   };
 
   const reportSchema = {
