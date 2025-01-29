@@ -11,7 +11,7 @@ import express from "express";
 import { reportGeneratorPrompt } from "./reportGeneratorPrompt.js";
 
 // Ensure your API key is correctly set here
-const genAI = new GoogleGenerativeAI("AIzaSyDB8bdAUIGfaSXa8raurIdnKJBefFwT230");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 function initializeModel() {
   const elementEnumTypeSchema = {

@@ -1,4 +1,5 @@
 import { exec, execSync } from "child_process";
+import { v4 as uuidv4 } from "uuid";
 import fs from "fs/promises";
 import { pool } from "../database/postgres-config.js";
 import { QueryResult } from "pg";
@@ -85,6 +86,7 @@ export const resolvers = {
         texFile,
         docID
       }: { texFile: string, docID: number } = args;
+      const newDocID = uuidv4()
       try {
         if (texFile.length != 0) {
           await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
@@ -101,10 +103,10 @@ export const resolvers = {
 
         let pdf = await fs.readFile(`outputs/${id}/output.pdf`);
         const client = new S3Client({ region: "eu-north-1", credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
-        const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${docID}`, Bucket: "reportease", ContentType: "application/pdf" });
+        const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${newDocID}`, Bucket: "reportease", ContentType: "application/pdf" });
         const response = await client.send(command);
         // console.log(response);
-        const url = `https://reportease.s3.eu-north-1.amazonaws.com/${id}/${docID}`;
+        const url = `https://reportease.s3.eu-north-1.amazonaws.com/${id}/${newDocID}`;
         // const new_url = await pool.query(`
         //   update documents
         //   set url = $1 
@@ -116,7 +118,7 @@ export const resolvers = {
           pdf: url,
         };
       } catch (err) {
-        const url = `https://reportji.s3.ap-south-1.amazonaws.com/${id}/${docID}`;
+        const url = `https://reportji.s3.ap-south-1.amazonaws.com/${id}/${newDocID}`;
         console.error(err);
         return {
           err: true,
