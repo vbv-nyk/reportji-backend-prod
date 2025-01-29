@@ -89,9 +89,8 @@ export const resolvers = {
       const newDocID = uuidv4()
       console.log(`PDF Generation: user ${id}, document ${docID}`)
       try {
-        if (texFile.length != 0) {
-          await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
-        }
+        await fs.mkdir(`outputs/${id}`, { recursive: true });
+        await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
         execSync(
           `pdflatex -interaction=nonstopmode -output-directory=outputs/${id} output.tex || true`
         );
@@ -119,7 +118,7 @@ export const resolvers = {
           pdf: url,
         };
       } catch (err) {
-        const url = `https://reportji.s3.ap-south-1.amazonaws.com/${id}/${newDocID}`;
+        const url = `https://reportease.s3.eu-north-1.amazonaws.com/${id}/${newDocID}`;
         console.error(err);
         return {
           err: true,
