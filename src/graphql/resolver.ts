@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import { pool } from "../database/postgres-config.js";
 import { QueryResult } from "pg";
 import { create } from "domain";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { ObjectNotInActiveTierError, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import generateReportWithLLM from "../llm/reportGenerator.js";
 import { text } from "stream/consumers";
 
@@ -102,24 +102,34 @@ export const resolvers = {
         // execSync(
         // `rm outputs/${id}/output.aux outputs/${id}/output.lof outputs/${id}/output.log outputs/${id}/output.toc outputs/${id}/output.out`
         // );
-
-        console.log("Compiled, now reading the file");
         let pdf = await fs.readFile(`outputs/${id}/output.pdf`);
-        const client = new S3Client({ region: "eu-north-1", credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
-        const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${newDocID}`, Bucket: "reportease", ContentType: "application/pdf" });
-        const response = await client.send(command);
-        // console.log(response);
-        const url = `https://reportease.s3.eu-north-1.amazonaws.com/${id}/${newDocID}`;
-        // const new_url = await pool.query(`
-        //   update documents
-        //   set url = $1 
-        //   where user_id = $2 and document_id = $3
-        //   `, [url, id, docID]);
-        return {
-          err: false,
-          errMsg: "None",
-          pdf: url,
-        };
+        if (process.env.CURRENT_MODE != "selfhost") {
+          console.log("Compiled, now reading the file");
+          const client = new S3Client({ region: "eu-north-1", credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
+          const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${newDocID}`, Bucket: "reportease", ContentType: "application/pdf" });
+          const response = await client.send(command);
+          // console.log(response);
+          const url = `https://reportease.s3.eu-north-1.amazonaws.com/${id}/${newDocID}`;
+          // const new_url = await pool.query(`
+          //   update documents
+          //   set url = $1 
+          //   where user_id = $2 and document_id = $3
+          //   `, [url, id, docID]);
+
+          return {
+            err: false,
+            errMsg: "None",
+            pdf: url,
+          };
+        } else {
+          const pdf = await fs.readFile(`outputs/${id}/output.pdf`, "base64");
+          console.log(pdf)
+          return {
+            err: false,
+            errMsg: "None",
+            pdf: pdf,
+          };
+        }
       } catch (err) {
         const url = `https://reportease.s3.eu-north-1.amazonaws.com/${id}/${newDocID}`;
         console.error(err);
